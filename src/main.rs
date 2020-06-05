@@ -1,5 +1,4 @@
-pub mod token;
-pub mod lexer;
+pub mod core;
 
 fn main() {
     println!("Hello, world!");
