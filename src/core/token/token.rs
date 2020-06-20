@@ -33,8 +33,19 @@ pub enum TokenType {
 
     // OPERATOR
 
+
+    GREATER,
+    // >
+    LESS,
+    // <
+    BangEqual,
+    // !=
+    EqualEqual,
+    // ==
     ASSIGN,
     // =
+    SLASH,
+    // /
     ASTERISK,
     // *
     PLUS,
@@ -60,6 +71,8 @@ pub enum TokenType {
     // :
     COMMA,
     // ,
+    BANG,
+    // !
 
     //KEYWORDS
 

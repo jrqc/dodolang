@@ -1,4 +1,6 @@
 use std::fmt;
+use crate::core::token::token::Token;
+use crate::core::token::token::TokenType;
 
 // Custom error type; can be any type which defined in the current crate
 // 💡 In here, we use a simple "unit struct" to simplify the example
@@ -18,20 +20,12 @@ impl fmt::Debug for DodoParseError {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::ParseError;
-    use crate::core::token::token::Token;
-    use crate::core::token::token::TokenType;
-
-    fn produce_error() -> Result<(), DodoParseError> {
-        Err(ParseError)
-    }
-
-    #[test]
-    fn basic_check() {
-
-        assert_eq!("An Error Occurred, Please Try Again!", produce_error());
-
+pub fn throw_error(token: Token, message: String) {
+    match token.token_type {
+        TokenType::EOF => println!("At end"),
+        _ => println!("An Error Occurred, Please Try Again!")
     }
 }
+
+#[cfg(test)]
+mod tests {}
