@@ -52,7 +52,7 @@ impl Lexer {
     }
 
     fn skip_whitespace(&mut self) {
-        while self.current_char.is_ascii_whitespace() {
+        while self.current_char == ' ' {
             self.read_char()
         }
     }
@@ -68,7 +68,7 @@ impl Lexer {
             '*' => Token::new(TokenType::ASTERISK, self.current_char.to_string()),
 
             // DELIMITER
-            '{' => Token::new(TokenType::LeftBrace,self.current_char.to_string()),
+            '{' => Token::new(TokenType::LeftBrace, self.current_char.to_string()),
             '}' => Token::new(TokenType::RightBrace, self.current_char.to_string()),
             '[' => Token::new(TokenType::LeftBracket, self.current_char.to_string()),
             ']' => Token::new(TokenType::RightBracket, self.current_char.to_string()),
@@ -76,6 +76,12 @@ impl Lexer {
             ')' => Token::new(TokenType::RightParenthesis, self.current_char.to_string()),
             ':' => Token::new(TokenType::COLON, self.current_char.to_string()),
             ',' => Token::new(TokenType::COMMA, self.current_char.to_string()),
+
+            // NEW LINE
+            '\n' => Token::new(TokenType::NewLine, self.current_char.to_string()),
+
+            // COMMENT
+            '#' => Token::new(TokenType::COMMENT, self.current_char.to_string()),
 
             // EOF
             '\0' => Token::new(TokenType::EOF, self.current_char.to_string()),
@@ -104,7 +110,7 @@ mod tests {
 
     #[test]
     fn basic_delimiters() {
-        let input = "=+(){}[],:";
+        let input = "=+(){}[],:\n";
 
         let expected = [
             Token::new(TokenType::ASSIGN, "=".to_string()),
@@ -117,6 +123,7 @@ mod tests {
             Token::new(TokenType::RightBracket, "]".to_string()),
             Token::new(TokenType::COMMA, ",".to_string()),
             Token::new(TokenType::COLON, ":".to_string()),
+            Token::new(TokenType::NewLine, "\n".to_string()),
             Token::new(TokenType::EOF, "\0".to_string()),
         ];
 
@@ -127,6 +134,7 @@ mod tests {
 
             assert_eq!(lexed_token, *token);
         }
+
     }
 
 
@@ -134,18 +142,20 @@ mod tests {
     fn basic_assignment() {
         let input =
             "scalar x
-             vector y[2]
+            vector y[2]
              matrix z[2,2]
              z = { 1 1 0 0 } ";
 
         let expected = [
             Token::new(TokenType::SCALAR, "scalar".to_string()),
             Token::new(TokenType::IDENT, "x".to_string()),
+            Token::new(TokenType::NewLine, "\n".to_string()),
             Token::new(TokenType::VECTOR, "vector".to_string()),
             Token::new(TokenType::IDENT, "y".to_string()),
             Token::new(TokenType::LeftBracket, "[".to_string()),
             Token::new(TokenType::INT, "2".to_string()),
             Token::new(TokenType::RightBracket, "]".to_string()),
+            Token::new(TokenType::NewLine, "\n".to_string()),
             Token::new(TokenType::MATRIX, "matrix".to_string()),
             Token::new(TokenType::IDENT, "z".to_string()),
             Token::new(TokenType::LeftBracket, "[".to_string()),
@@ -153,6 +163,7 @@ mod tests {
             Token::new(TokenType::COMMA, ",".to_string()),
             Token::new(TokenType::INT, "2".to_string()),
             Token::new(TokenType::RightBracket, "]".to_string()),
+            Token::new(TokenType::NewLine, "\n".to_string()),
             Token::new(TokenType::IDENT, "z".to_string()),
             Token::new(TokenType::ASSIGN, "=".to_string()),
             Token::new(TokenType::LeftBrace, "{".to_string()),
@@ -161,6 +172,7 @@ mod tests {
             Token::new(TokenType::INT, "0".to_string()),
             Token::new(TokenType::INT, "0".to_string()),
             Token::new(TokenType::RightBrace, "}".to_string()),
+            Token::new(TokenType::EOF, "\0".to_string()),
 
         ];
 
@@ -173,6 +185,5 @@ mod tests {
             assert_eq!(lexed_token, *token);
         }
     }
-
 }
 

@@ -1,36 +1,16 @@
-use crate::core::token::token::TokenType;
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Program {}
+use crate::core::ast::stmt::Stmt;
 
 
-pub struct Variable {
-    pub name: String,
-    pub size: i32,
+pub struct Program {
+    pub statements: Vec<Stmt>
 }
 
-impl Variable {
-    pub fn new(name: String, size: i32) -> Self {
-        Variable {
-            name,
-            size,
+impl Program {
+    pub fn new(program: Vec<Stmt>) -> Self {
+        Program {
+            statements: program
         }
     }
-}
-
-pub enum Expression {
-    Definition(String, i32),
-    Integer(i32),
-    Infix(TokenType, Box<Expression>, Box<Expression>),
-    FunctionCall(),
-    Variable(Variable)
-}
-
-pub enum Statement {
-    Definition(TokenType, Variable),
-    Assignment(Variable, Expression),
-    Print(Expression),
-    Comment(String),
 }
 
 
