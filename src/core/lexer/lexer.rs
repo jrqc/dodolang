@@ -66,6 +66,7 @@ impl Lexer {
             '+' => Token::new(TokenType::PLUS, self.current_char.to_string()),
             '-' => Token::new(TokenType::MINUS, self.current_char.to_string()),
             '*' => Token::new(TokenType::ASTERISK, self.current_char.to_string()),
+            '/' => Token::new(TokenType::SLASH, self.current_char.to_string()),
 
             // DELIMITER
             '{' => Token::new(TokenType::LeftBrace, self.current_char.to_string()),

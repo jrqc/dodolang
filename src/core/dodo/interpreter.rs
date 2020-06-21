@@ -14,20 +14,19 @@ impl Interpreter {
         }
     }
 
-    pub fn interpret(&mut self, expr: Expr) -> i32 {
+    pub fn interpret(&mut self, expr: Expr) -> i128 {
         let value = self.evaluate(expr);
-        println!("{}", value);
         return value;
     }
 
-    pub fn evaluate(&mut self, expr: Expr) -> i32 {
+    pub fn evaluate(&mut self, expr: Expr) -> i128 {
         if let Expr::Literal(val) = expr {
-            return val;
+            return val as i128;
         }
-        if let Expr::Grouping(val) = expr {
+        if let Expr::Grouping(val) = expr.clone() {
             return self.evaluate(*val);
         }
-        if let Expr::Binary(left, operator, right) = expr {
+        if let Expr::Binary(left, operator, right) = expr.clone() {
             let mut left = self.evaluate(*left);
             let mut right = self.evaluate(*right);
             match operator.token_type {
@@ -37,6 +36,11 @@ impl Interpreter {
                 TokenType::SLASH => return left / right,
                 _ => ()
             }
+        }
+        if let Expr::Unary(token, val) = expr.clone() {
+            let mut primary = self.evaluate(*val);
+            return -primary;
+
         }
         return 0;
     }
@@ -52,7 +56,7 @@ mod tests {
     use crate::core::ast::parser::Parser;
 
     #[test]
-    fn basic_delimiters() {
+    fn basic_operations() {
         let input = "(21*5)+3+(6*4)\n";
 
 
@@ -77,5 +81,32 @@ mod tests {
         let mut val = interpreter.evaluate(expr);
 
         assert_eq!(val, 132);
+    }
+    #[test]
+    fn basic_operations_2() {
+        let input = "(5+5)*4+4\n";
+
+
+        // let expected = [];
+
+        let mut tokens = Vec::new();
+
+        let mut lexer = Lexer::new(input.to_string());
+        loop {
+            let lexed_token = lexer.next_token();
+            match lexed_token.token_type {
+                TokenType::EOF => break,
+                _ => {
+                    tokens.push(lexed_token)
+                }
+            }
+        }
+        let mut parser = Parser::new(tokens);
+        let mut expr = parser.parse();
+
+        let mut interpreter = Interpreter::new();
+        let mut val = interpreter.evaluate(expr);
+
+        assert_eq!(val, 44);
     }
 }

@@ -22,16 +22,7 @@ impl Parser {
         return self.expression();
     }
     fn expression(&mut self) -> Expr {
-        return self.equality();
-    }
-    fn equality(&mut self) -> Expr {
-        let mut expr = self.comparison();
-        while self.match_token(vec![TokenType::EqualEqual, TokenType::BangEqual]) {
-            let operator = self.previous();
-            let right = self.comparison();
-            expr = Expr::Binary(Box::new(expr), operator, Box::new(right))
-        }
-        return expr;
+        return self.addition();
     }
     fn match_token(&mut self, token_types: Vec<TokenType>) -> bool {
         for token in token_types {
@@ -43,18 +34,18 @@ impl Parser {
         return false;
     }
     fn check(&mut self, token_type: TokenType) -> bool {
-        return match self.is_at_end() {
+        return match self.at_end() {
             true => false,
             _ => self.peek().token_type == token_type
         };
     }
     fn advance(&mut self) -> Token {
-        if !self.is_at_end() {
+        if !self.at_end() {
             self.current += 1;
         }
         return self.previous();
     }
-    fn is_at_end(&mut self) -> bool {
+    fn at_end(&mut self) -> bool {
         match self.peek().token_type {
             TokenType::EOF => true,
             _ => false
@@ -68,15 +59,6 @@ impl Parser {
     fn previous(&mut self) -> Token {
         let index = self.current.clone();
         return self.tokens[(index - 1) as usize].clone();
-    }
-    fn comparison(&mut self) -> Expr {
-        let mut expr = self.addition();
-        while self.match_token(vec![TokenType::GREATER, TokenType::LESS]) {
-            let operator = self.previous();
-            let right = self.addition();
-            expr = Expr::Binary(Box::new(expr), operator, Box::new(right))
-        }
-        return expr;
     }
     fn addition(&mut self) -> Expr {
         let mut expr = self.multiplication();
@@ -102,18 +84,18 @@ impl Parser {
             let right = self.unary();
             return Expr::Unary(operator, Box::new(right));
         }
-        return self.primary();
+        return self.primary().unwrap();
     }
-    fn primary(&mut self) -> Expr {
+    fn primary(&mut self) -> Result<Expr, DodoParseError> {
         if self.match_token(vec![TokenType::INT]) {
-            return Expr::Literal(self.previous().val.parse::<i32>().unwrap());
+            return Ok(Expr::Literal(self.previous().val.parse::<i32>().unwrap()));
         }
         if self.match_token(vec![TokenType::LeftParenthesis]) {
             let expr = self.expression();
             self.consume(TokenType::RightParenthesis, "Expect )".to_string());
-            return Expr::Grouping(Box::new(expr));
+            return Ok(Expr::Grouping(Box::new(expr)));
         }
-        return Expr::Err;
+        return Err(DodoParseError);
     }
     fn consume(&mut self, token_type: TokenType, message: String) -> Result<Token, DodoParseError> {
         match self.check(token_type) {
@@ -127,7 +109,7 @@ impl Parser {
     }
     fn sync(&mut self) {
         self.advance();
-        while !self.is_at_end() {
+        while !self.at_end() {
             if self.previous().token_type == TokenType::NewLine {
                 break;
             }
@@ -152,7 +134,7 @@ mod tests {
     use crate::core::ast::expr::Expr;
 
     #[test]
-    fn basic_delimiters() {
+    fn basic_operations() {
         let input = "(6+5)\n";
 
 

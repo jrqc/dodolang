@@ -4,9 +4,10 @@ use crate::core::ast::expr::Expr;
 use crate::core::token::token::Token;
 use crate::core::token::token::TokenType;
 use crate::core::dodo::interpreter::Interpreter;
+use crate::core::dodo::repl::start;
 
 
 fn main() {
-
+start();
 
 }
