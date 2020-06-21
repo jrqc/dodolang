@@ -18,8 +18,32 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Expr {
-        return self.expression();
+    pub fn parse(&mut self) -> Vec<Stmt> {
+        let mut statements = Vec::new();
+        while !self.is_at_end() {
+            statements.push(self.statement())
+        }
+        return statements;
+    }
+
+    fn statement(&mut self) -> Stmt {
+        let for_stmt = vec![TokenType::FOR];
+        let print_stmt = vec![TokenType::PRINT];
+        //todo
+        //if self.match_token(for_stmt) {
+        //    return self.for_statement;
+        //}
+        if self.match_token(print_stmt) {
+            return self.print_statement();
+        }
+
+        return self.expression_statement();
+    }
+
+    fn print_statement(&mut self) -> Stmt {
+        let value = self.expression();
+        self.consume(TokenType::NewLine, "Expect '\n'".to_string());
+        return Stmt::Print(value);
     }
     fn expression(&mut self) -> Expr {
         return self.addition();
