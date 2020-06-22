@@ -145,7 +145,8 @@ mod tests {
             "scalar x
             vector y[2]
              matrix z[2,2]
-             z = { 1 1 0 0 } ";
+             z = { 1 1 0 0 }
+             print x";
 
         let expected = [
             Token::new(TokenType::SCALAR, "scalar".to_string()),
@@ -173,6 +174,9 @@ mod tests {
             Token::new(TokenType::INT, "0".to_string()),
             Token::new(TokenType::INT, "0".to_string()),
             Token::new(TokenType::RightBrace, "}".to_string()),
+            Token::new(TokenType::NewLine, "\n".to_string()),
+            Token::new(TokenType::PRINT, "print".to_string()),
+            Token::new(TokenType::IDENT, "x".to_string()),
             Token::new(TokenType::EOF, "\0".to_string()),
 
         ];

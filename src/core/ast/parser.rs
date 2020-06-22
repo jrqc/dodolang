@@ -20,10 +20,25 @@ impl Parser {
 
     pub fn parse(&mut self) -> Vec<Stmt> {
         let mut statements = Vec::new();
-        while !self.is_at_end() {
-            statements.push(self.statement())
+        while !self.at_end() {
+            statements.push(self.declaration())
         }
         return statements;
+    }
+    fn declaration(&mut self) -> Stmt {
+        if self.match_token(vec![TokenType::SCALAR]) {
+            let mut var_type = self.peek().token_type.clone();
+            return self.scalar_declaration(var_type);
+        }
+        return self.statement();
+        // todo error
+    }
+
+    fn scalar_declaration(&mut self, var_type: TokenType) -> Stmt {
+        let mut name = self.consume(TokenType::IDENT, "expect".to_string());
+        let mut token = name.unwrap().clone();
+        self.consume(TokenType::NewLine, "Expect".to_string());
+        return Stmt::Definition(Token::new(var_type, "scalar".to_string()), token.clone().val);
     }
 
     fn statement(&mut self) -> Stmt {
@@ -42,11 +57,28 @@ impl Parser {
 
     fn print_statement(&mut self) -> Stmt {
         let value = self.expression();
-        self.consume(TokenType::NewLine, "Expect '\n'".to_string());
+        self.consume(TokenType::NewLine, "Expect ".to_string());
         return Stmt::Print(value);
     }
+    fn expression_statement(&mut self) -> Stmt {
+        let expr = self.expression();
+        self.consume(TokenType::NewLine, "Expect ".to_string());
+        return Stmt::Expression(expr);
+    }
     fn expression(&mut self) -> Expr {
-        return self.addition();
+        return self.assignment();
+    }
+    fn assignment(&mut self) -> Expr {
+        let expr = self.addition();
+        if self.match_token(vec![TokenType::ASSIGN]) {
+            let equals = self.previous();
+            let value = self.assignment();
+            if let Expr::Variable(token) = expr {
+                return Expr::Assign(token, Box::new(value));
+            }
+            // todo error(equals, "Invalid");
+        }
+        return expr;
     }
     fn match_token(&mut self, token_types: Vec<TokenType>) -> bool {
         for token in token_types {
@@ -111,6 +143,9 @@ impl Parser {
         return self.primary().unwrap();
     }
     fn primary(&mut self) -> Result<Expr, DodoParseError> {
+        if self.match_token(vec![TokenType::IDENT]) {
+            return Ok(Expr::Variable(self.previous()));
+        }
         if self.match_token(vec![TokenType::INT]) {
             return Ok(Expr::Literal(self.previous().val.parse::<i32>().unwrap()));
         }
@@ -156,10 +191,34 @@ mod tests {
     use crate::core::token::token::TokenType;
     use crate::core::lexer::lexer::Lexer;
     use crate::core::ast::expr::Expr;
+    use crate::core::ast::stmt::Stmt;
 
+    // #[test]
+    // fn basic_operations() {
+    //     let input = "(6+5)\n";
+    //
+    //
+    //     // let expected = [];
+    //
+    //     let mut tokens = Vec::new();
+    //
+    //     let mut lexer = Lexer::new(input.to_string());
+    //     loop {
+    //         let lexed_token = lexer.next_token();
+    //         match lexed_token.token_type {
+    //             TokenType::EOF => break,
+    //             _ => {
+    //                 tokens.push(lexed_token)
+    //             }
+    //         }
+    //     }
+    //     let mut parser = Parser::new(tokens.clone());
+    //     let mut expr = parser.parse();
+    //     assert_eq!(expr, Expr::Grouping(Box::from(Expr::Binary(Box::new(Expr::Literal(6)), Token { token_type: TokenType::PLUS, val: "+".to_string() }, Box::new(Expr::Literal(5))))));
+    // }
     #[test]
-    fn basic_operations() {
-        let input = "(6+5)\n";
+    fn basic_operations_statement() {
+        let input = "print 1\n";
 
 
         // let expected = [];
@@ -170,14 +229,17 @@ mod tests {
         loop {
             let lexed_token = lexer.next_token();
             match lexed_token.token_type {
-                TokenType::EOF => break,
+                TokenType::EOF => {
+                    tokens.push(lexed_token);
+                    break;
+                }
                 _ => {
                     tokens.push(lexed_token)
                 }
             }
         }
         let mut parser = Parser::new(tokens.clone());
-        let mut expr = parser.parse();
-        assert_eq!(expr, Expr::Grouping(Box::from(Expr::Binary(Box::new(Expr::Literal(6)), Token { token_type: TokenType::PLUS, val: "+".to_string() }, Box::new(Expr::Literal(5))))));
+        let mut stmts = parser.parse();
+        assert_eq!(stmts, vec![Stmt::Print(Expr::Literal(1))]);
     }
 }

@@ -5,13 +5,15 @@ use crate::core::lexer::lexer::Lexer;
 use crate::core::ast::parser::Parser;
 use std::io::{self, Write};
 use crate::core::dodo::interpreter::Interpreter;
+use crate::core::dodo::environment::Environment;
 
-const PROMPT: &str = "$> ";
+const PROMPT: &str = ">>> ";
 
 pub fn start() {
     println!("Dodolang!");
 
-    let mut interpreter = Interpreter::new();
+    let mut env = Environment::new();
+    let mut interpreter = Interpreter::new(env);
 
     loop {
         print!("{}", PROMPT);
@@ -32,7 +34,11 @@ pub fn start() {
         loop {
             let lexed_token = lexer.next_token();
             match lexed_token.token_type {
-                TokenType::EOF => break,
+                TokenType::EOF =>
+                    {
+                        tokens.push(lexed_token);
+                        break;
+                    }
                 _ => {
                     tokens.push(lexed_token)
                 }
@@ -42,7 +48,5 @@ pub fn start() {
         let mut expr = parser.parse();
 
         let outcome = interpreter.interpret(expr);
-
-        println!("{}", outcome)
     }
 }

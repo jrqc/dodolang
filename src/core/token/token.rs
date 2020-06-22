@@ -94,6 +94,8 @@ pub fn identifier(identifier: &str) -> TokenType {
         "vector" => TokenType::VECTOR,
         "matrix" => TokenType::MATRIX,
 
+        "print" => TokenType::PRINT,
+
         "for" => TokenType::FOR,
 
         _ => TokenType::IDENT
