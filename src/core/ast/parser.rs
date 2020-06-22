@@ -38,7 +38,7 @@ impl Parser {
         let mut name = self.consume(TokenType::IDENT, "expect".to_string());
         let mut token = name.unwrap().clone();
         self.consume(TokenType::NewLine, "Expect".to_string());
-        return Stmt::Definition(Token::new(var_type, "scalar".to_string()), token.clone().val);
+        return Stmt::Definition(Token::new(TokenType::SCALAR, "scalar".to_string()), token.clone().val);
     }
 
     fn statement(&mut self) -> Stmt {

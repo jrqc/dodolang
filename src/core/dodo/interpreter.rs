@@ -46,8 +46,14 @@ impl Interpreter {
         }
         if let Expr::Assign(token, val) = expr.clone() {
             let mut final_val = self.evaluate(*val);
-            self.env.assign(token, vec![final_val as i32]);
+            self.env.assign(token, vec![final_val as i128]);
+            return final_val;
         }
+        if let Expr::Variable(token) = expr.clone() {
+            let final_val = self.env.get(token);
+            return final_val.unwrap()[0];
+        }
+
         return 0;
     }
 
@@ -61,9 +67,9 @@ impl Interpreter {
         }
         if let Stmt::Definition(token, val) = stmt.clone() {
             match token.token_type {
-                TokenType::SCALAR => self.env.define(val, vec![]),
-                TokenType::VECTOR => self.env.define(val, vec![]),
-                TokenType::MATRIX => self.env.define(val, vec![]),
+                TokenType::SCALAR => self.env.define(val, vec![0]),
+                TokenType::VECTOR => self.env.define(val, vec![0]),
+                TokenType::MATRIX => self.env.define(val, vec![0]),
                 _ => ()
             }
         }
