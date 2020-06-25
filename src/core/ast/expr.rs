@@ -8,7 +8,7 @@ pub enum Expr {
     Grouping(Box<Expr>),
     Literal(i32),
     Set(Box<Expr>, Token, Box<Expr>),
-    Vector(Vec<i32>),
+    Vector(Vec<i128>),
     FunctionCall(Box<Expr>, Vec<Expr>),
     Binary(Box<Expr>, Token, Box<Expr>),
     Variable(Token),

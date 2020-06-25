@@ -4,6 +4,7 @@ use crate::core::token::token::Token;
 use crate::core::token::token::TokenType;
 use crate::core::dodo::error_types::DodoParseError;
 use crate::core::dodo::error_types::throw_error;
+use crate::core::token::token::TokenType::VECTOR;
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -30,6 +31,10 @@ impl Parser {
             let mut var_type = self.peek().token_type.clone();
             return self.scalar_declaration(var_type);
         }
+        if self.match_token(vec![TokenType::VECTOR]) {
+            let mut var_type = self.peek().token_type.clone();
+            return self.vector_declaration(var_type);
+        }
         return self.statement();
         // todo error
     }
@@ -39,6 +44,16 @@ impl Parser {
         let mut token = name.unwrap().clone();
         self.consume(TokenType::NewLine, "Expect".to_string());
         return Stmt::Definition(Token::new(TokenType::SCALAR, "scalar".to_string()), token.clone().val);
+    }
+
+    fn vector_declaration(&mut self, var_type: TokenType) -> Stmt {
+        let mut name = self.consume(TokenType::IDENT, "expect".to_string());
+        self.consume(TokenType::LeftBracket, "expect".to_string());
+        let size = self.consume(TokenType::INT, "expect".to_string());
+        self.consume(TokenType::RightBracket, "expect".to_string());
+        let mut token = name.unwrap().clone();
+        self.consume(TokenType::NewLine, "Expect".to_string());
+        return Stmt::Definition(Token::new(TokenType::VECTOR, "vector".to_string()), size.unwrap().val);
     }
 
     fn statement(&mut self) -> Stmt {
@@ -154,6 +169,25 @@ impl Parser {
             self.consume(TokenType::RightParenthesis, "Expect )".to_string());
             return Ok(Expr::Grouping(Box::new(expr)));
         }
+        if self.match_token(vec![TokenType::LeftBrace]) {
+            let mut vector = Vec::new();
+            self.consume(TokenType::INT, "Expect )".to_string());
+            vector.push(self.previous().val.parse::<i128>().unwrap());
+            loop {
+                if self.match_token(vec![TokenType::COMMA]) {
+                    continue;
+                } else if self.match_token(vec![TokenType::INT]) {
+                    println!("{}", self.previous());
+                    vector.push(self.previous().val.parse::<i128>().unwrap());
+                } else if self.match_token(vec![TokenType::RightBrace]) {
+                    break;
+                } else {
+                    return Err(DodoParseError);
+                }
+            }
+            return Ok(Expr::Vector(vector));
+        }
+
         return Err(DodoParseError);
     }
     fn consume(&mut self, token_type: TokenType, message: String) -> Result<Token, DodoParseError> {

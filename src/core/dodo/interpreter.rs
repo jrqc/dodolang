@@ -4,6 +4,7 @@ use crate::core::token::token::Token;
 use crate::core::token::token::TokenType;
 use crate::core::ast::stmt::Stmt::Print;
 use crate::core::dodo::environment::Environment;
+use crate::core::dodo::error_types::DodoParseError;
 
 pub struct Interpreter {
     env: Environment
@@ -45,21 +46,34 @@ impl Interpreter {
             return -primary;
         }
         if let Expr::Assign(token, val) = expr.clone() {
+            println!("{}", val);
             let mut final_val = self.evaluate(*val);
             self.env.assign(token, vec![final_val as i128]);
             return final_val;
         }
         if let Expr::Variable(token) = expr.clone() {
             let final_val = self.env.get(token);
+            println!("{:?}", final_val);
             return final_val.unwrap()[0];
         }
-
         return 0;
+    }
+
+    pub fn evaluate_vector(&mut self, expr: Expr) -> Result<Vec<i128>, DodoParseError> {
+        if let Expr::Vector(vector) = expr.clone() {
+            self.env.assign(token, vec![final_val as i128]);
+            return Ok(vector);
+        }
+        Err(DodoParseError)
     }
 
     pub fn statement(&mut self, stmt: Stmt) {
         if let Stmt::Expression(expr) = stmt.clone() {
-            self.evaluate(expr);
+            if let Expr::Vector(vector) = expr.clone() {
+                self.evaluate_vector(expr);
+            } else {
+                self.evaluate(expr);
+            }
         }
         if let Stmt::Print(expr) = stmt.clone() {
             let printable = self.evaluate(expr);
