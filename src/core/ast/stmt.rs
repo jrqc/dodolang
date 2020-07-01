@@ -5,7 +5,7 @@ use std::fmt;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
-    Definition(Token, String),
+    Definition(Token, String, String),
     Expression(Expr),
     Print(Expr),
     FOR(Expr, Box<Stmt>),

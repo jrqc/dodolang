@@ -1,17 +1,18 @@
-use crate::core::token::token::Token;
+use crate::core::token::token::{Token, TokenType};
 use std::fmt;
 
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
-    Assign(Token, Box<Expr>),
+    Assign(Token, Box<Expr>, String),
     Grouping(Box<Expr>),
-    Literal(i32),
+    Literal(i128),
     Set(Box<Expr>, Token, Box<Expr>),
-    Vector(Vec<i128>),
+    Vector(Token, Vec<i128>),
+    Matrix(Vec<i128>),
     FunctionCall(Box<Expr>, Vec<Expr>),
     Binary(Box<Expr>, Token, Box<Expr>),
-    Variable(Token),
+    Variable(Token, String),
     Get(String, Token),
     Unary(Token, Box<Expr>),
     Err,
