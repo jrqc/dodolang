@@ -223,7 +223,7 @@ impl Interpreter {
                     self.env.define(token.val, vec![0; rows.parse::<usize>().unwrap()])
                 }
                 TokenType::MATRIX => {
-                    self.env.define(token.val, vec![0; columns.parse::<usize>().unwrap()])
+                   // self.env.define(token.val, vec![0; columns.parse::<usize>().unwrap()])
                 }
                 _ => ()
             }

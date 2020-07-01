@@ -4,7 +4,6 @@ use crate::core::token::token::Token;
 use crate::core::token::token::TokenType;
 use crate::core::dodo::error_types::DodoParseError;
 use crate::core::dodo::error_types::throw_error;
-use crate::core::token::token::TokenType::VECTOR;
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -186,20 +185,42 @@ impl Parser {
         }
         if self.match_token(vec![TokenType::LeftBrace]) {
             if self.peek().token_type == TokenType::LeftBrace {
+                println!("yeah");
                 let mut vector = Vec::new();
+                let mut matrix = Vec::new();
+                self.consume(TokenType::LeftBrace, "Expect )".to_string());
                 self.consume(TokenType::INT, "Expect )".to_string());
                 vector.push(self.previous().val.parse::<i128>().unwrap());
+                let mut index =  0;
                 loop {
                     if self.match_token(vec![TokenType::COMMA]) {
                         continue;
                     } else if self.match_token(vec![TokenType::INT]) {
                         vector.push(self.previous().val.parse::<i128>().unwrap());
-                    } else if self.match_token(vec![TokenType::RightBrace]) {
-                        break;
+                    }
+                    else if self.match_token(vec![TokenType::LeftBrace]) {
+                        continue;
+                    }else if self.match_token(vec![TokenType::RightBrace]) {
+                        matrix.insert(index, vector.clone());
+                        vector = Vec::new();
+                        index += 1;
+                        if self.match_token(vec![TokenType::COMMA]){
+                            self.consume(TokenType::LeftBrace, "Expect )".to_string());
+                            continue;
+                        }
+                        else if self.match_token(vec![TokenType::RightBrace]) {
+                            break;
+                        }
+                        else {
+                            return Err(DodoParseError);
+                        }
                     } else {
                         return Err(DodoParseError);
                     }
                 }
+                println!("{}", Expr::Matrix(matrix.clone()));
+                return Ok(Expr::Matrix(matrix));
+
             } else {
                 let token = self.previous();
                 println!("{}", token);

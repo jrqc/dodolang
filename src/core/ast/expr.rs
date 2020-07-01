@@ -9,7 +9,7 @@ pub enum Expr {
     Literal(i128),
     Set(Box<Expr>, Token, Box<Expr>),
     Vector(Token, Vec<i128>),
-    Matrix(Vec<i128>),
+    Matrix(Vec<Vec<i128>>),
     FunctionCall(Box<Expr>, Vec<Expr>),
     Binary(Box<Expr>, Token, Box<Expr>),
     Variable(Token, String),
