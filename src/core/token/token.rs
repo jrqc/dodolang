@@ -1,6 +1,7 @@
 use std::fmt;
 
-#[derive(Debug, PartialEq)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct Token {
     pub token_type: TokenType,
     pub val: String,
@@ -20,6 +21,10 @@ impl Token {
 pub enum TokenType {
     ILLEGAL,
     EOF,
+    NewLine,
+
+    // COMMENT
+    COMMENT,
 
     // IDENTIFIER
     IDENT,
@@ -28,8 +33,19 @@ pub enum TokenType {
 
     // OPERATOR
 
+
+    GREATER,
+    // >
+    LESS,
+    // <
+    BangEqual,
+    // !=
+    EqualEqual,
+    // ==
     ASSIGN,
     // =
+    SLASH,
+    // /
     ASTERISK,
     // *
     PLUS,
@@ -55,6 +71,8 @@ pub enum TokenType {
     // :
     COMMA,
     // ,
+    BANG,
+    // !
 
     //KEYWORDS
 
@@ -66,6 +84,8 @@ pub enum TokenType {
     // Matrix variable declaration
     FOR,
     // For loop statement
+    PRINT,
+    // Print statement
 }
 
 pub fn identifier(identifier: &str) -> TokenType {
@@ -73,6 +93,8 @@ pub fn identifier(identifier: &str) -> TokenType {
         "scalar" => TokenType::SCALAR,
         "vector" => TokenType::VECTOR,
         "matrix" => TokenType::MATRIX,
+
+        "print" => TokenType::PRINT,
 
         "for" => TokenType::FOR,
 
