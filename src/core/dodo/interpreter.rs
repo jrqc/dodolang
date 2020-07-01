@@ -28,34 +28,37 @@ impl Interpreter {
     }
 
     pub fn evaluate_binary(&mut self, left: Expr, right: Expr, operator: Token) -> Expr {
-        println!("{}", left);
+        println!("{} ---- {}", left, right);
         if let Expr::Literal(val1) = left {
-            if let Expr::Literal(val2) = right {
-                match operator.token_type {
-                    TokenType::MINUS => return Expr::Literal(val1 - val2),
-                    TokenType::PLUS => return Expr::Literal(val1 + val2),
-                    TokenType::ASTERISK => return Expr::Literal(val1 * val2),
-                    TokenType::SLASH => return Expr::Literal(val1 / val2),
-                    _ => ()
-                }
-            }
-            if let Expr::Vector(token, val2) = right {
-                let mut new_vector = vec![0; val2.len()];
-                match operator.token_type {
-                    TokenType::ASTERISK => {
-                        for (i, item) in val2.iter().enumerate() {
-                            new_vector[i] = item * val1
-                        }
-                        return Expr::Vector(token, new_vector);
+            match right {
+                Expr::Literal(val2) => {
+                    match operator.token_type {
+                        TokenType::MINUS => return Expr::Literal(val1 - val2),
+                        TokenType::PLUS => return Expr::Literal(val1 + val2),
+                        TokenType::ASTERISK => return Expr::Literal(val1 * val2),
+                        TokenType::SLASH => return Expr::Literal(val1 / val2),
+                        _ => ()
                     }
-                    TokenType::SLASH => {
-                        for (i, item) in val2.iter().enumerate() {
-                            new_vector[i] = item / val1
-                        }
-                        return Expr::Vector(token, new_vector);
-                    }
-                    _ => ()
                 }
+                Expr::Vector(token, val2) => {
+                    let mut new_vector = vec![0; val2.len()];
+                    match operator.token_type {
+                        TokenType::ASTERISK => {
+                            for (i, item) in val2.iter().enumerate() {
+                                new_vector[i] = item * val1
+                            }
+                            return Expr::Vector(token, new_vector);
+                        }
+                        TokenType::SLASH => {
+                            for (i, item) in val2.iter().enumerate() {
+                                new_vector[i] = item / val1
+                            }
+                            return Expr::Vector(token, new_vector);
+                        }
+                        _ => ()
+                    }
+                }
+                _ => {}
             }
         } else if let Expr::Literal(val1) = right {
             if let Expr::Literal(val2) = left {
@@ -85,26 +88,70 @@ impl Interpreter {
                     _ => ()
                 }
             }
+        } else if let Expr::Vector(token1, vector1) = right {
+            if let Expr::Vector(token2, vector2) = left {
+                let mut new_value = 0;
+                match operator.token_type {
+                    TokenType::ASTERISK => {
+                        for (i, item) in vector2.iter().enumerate() {
+                            new_value += item * vector1[i]
+                        }
+                        return Expr::Literal(new_value);
+                    }
+                    TokenType::SLASH => {
+                        for (i, item) in vector2.iter().enumerate() {
+                            new_value += item / vector1[i]
+                        }
+                        return Expr::Literal(new_value);
+                    }
+                    _ => ()
+                }
+            }
+        }
+        else if let Expr::Vector(token1, vector1) = left {
+            if let Expr::Vector(token2, vector2) = right {
+                let mut new_value = 0;
+                match operator.token_type {
+                    TokenType::ASTERISK => {
+                        for (i, item) in vector2.iter().enumerate() {
+                            new_value += item * vector1[i]
+                        }
+                        return Expr::Literal(new_value);
+                    }
+                    TokenType::SLASH => {
+                        for (i, item) in vector2.iter().enumerate() {
+                            new_value += item / vector1[i]
+                        }
+                        return Expr::Literal(new_value);
+                    }
+                    _ => ()
+                }
+            }
         }
         return Expr::Literal(0);
     }
 
     pub fn evaluate_vector_assignment(&mut self, token: Token, expr: Expr) -> Expr {
-        let mut final_expr = self.evaluate(expr);
-        if let Expr::Vector(token, val) = final_expr {
-            self.env.assign(token.clone(), val.clone());
+        if let Expr::Vector(token1, val) = expr {
+            println!("{}", token);
+            &self.env.assign(token.clone(), val.clone());
             return Expr::Vector(token.clone(), val.clone());
         }
         return Expr::Vector(token, vec![0]);
     }
 
     pub fn evaluate_literal_assignment(&mut self, token: Token, expr: Expr) -> Expr {
+        println!("wtf");
         if let Expr::Literal(val) = expr {
             &self.env.assign(token, vec![val as i128]);
             return Expr::Literal(val);
         }
+        if let Expr::Vector(token1, val) = expr {
+            println!("{}", token);
+            &self.env.assign(token.clone(), val.clone());
+            return Expr::Vector(token.clone(), val.clone());
+        }
         return Expr::Literal(0);
-        ;
     }
 
     pub fn evaluate_unary(&mut self, expr: Expr) -> Expr {
@@ -115,7 +162,6 @@ impl Interpreter {
     }
 
     pub fn evaluate_variable(&mut self, token: Token) -> Expr {
-        println!("{}", token.token_type);
         let mut final_val = self.env.get(token.clone());
         return if final_val.unwrap().clone().len() > 1 {
             Expr::Vector(token.clone(), final_val.unwrap().clone())
@@ -147,8 +193,9 @@ impl Interpreter {
             return self.evaluate_unary(primary);
         }
         if let Expr::Assign(token, val, variable_type) = expr.clone() {
-            return if let Expr::Vector(token, vector) = *val.clone() {
+            return if let Expr::Vector(token1, vector) = *val.clone() {
                 let mut final_expr = self.evaluate(*val);
+                println!("asd2");
                 self.evaluate_vector_assignment(token, final_expr)
             } else {
                 let mut final_expr = self.evaluate(*val);

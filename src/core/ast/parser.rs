@@ -106,10 +106,6 @@ impl Parser {
                 println!("{}", token.val);
                 return Expr::Assign(token, Box::new(value), variable_type);
             }
-            if let Expr::Vector(token, vector) = expr {
-                println!("{}", token.val);
-                return Expr::Assign(token, Box::new(value), "variable_type".to_string());
-            }
             // todo error(equals, "Invalid");
         }
         return expr;
@@ -178,7 +174,7 @@ impl Parser {
     }
     fn primary(&mut self) -> Result<Expr, DodoParseError> {
         if self.match_token(vec![TokenType::IDENT]) {
-            return Ok(Expr::Variable(self.previous(),"literal".to_string()));
+            return Ok(Expr::Variable(self.previous(), "literal".to_string()));
         }
         if self.match_token(vec![TokenType::INT]) {
             return Ok(Expr::Literal(self.previous().val.parse::<i128>().unwrap()));
@@ -189,23 +185,40 @@ impl Parser {
             return Ok(Expr::Grouping(Box::new(expr)));
         }
         if self.match_token(vec![TokenType::LeftBrace]) {
-            let token = self.previous();
-            println!("{}", token);
-            let mut vector = Vec::new();
-            self.consume(TokenType::INT, "Expect )".to_string());
-            vector.push(self.previous().val.parse::<i128>().unwrap());
-            loop {
-                if self.match_token(vec![TokenType::COMMA]) {
-                    continue;
-                } else if self.match_token(vec![TokenType::INT]) {
-                    vector.push(self.previous().val.parse::<i128>().unwrap());
-                } else if self.match_token(vec![TokenType::RightBrace]) {
-                    break;
-                } else {
-                    return Err(DodoParseError);
+            if self.peek().token_type == TokenType::LeftBrace {
+                let mut vector = Vec::new();
+                self.consume(TokenType::INT, "Expect )".to_string());
+                vector.push(self.previous().val.parse::<i128>().unwrap());
+                loop {
+                    if self.match_token(vec![TokenType::COMMA]) {
+                        continue;
+                    } else if self.match_token(vec![TokenType::INT]) {
+                        vector.push(self.previous().val.parse::<i128>().unwrap());
+                    } else if self.match_token(vec![TokenType::RightBrace]) {
+                        break;
+                    } else {
+                        return Err(DodoParseError);
+                    }
                 }
+            } else {
+                let token = self.previous();
+                println!("{}", token);
+                let mut vector = Vec::new();
+                self.consume(TokenType::INT, "Expect )".to_string());
+                vector.push(self.previous().val.parse::<i128>().unwrap());
+                loop {
+                    if self.match_token(vec![TokenType::COMMA]) {
+                        continue;
+                    } else if self.match_token(vec![TokenType::INT]) {
+                        vector.push(self.previous().val.parse::<i128>().unwrap());
+                    } else if self.match_token(vec![TokenType::RightBrace]) {
+                        break;
+                    } else {
+                        return Err(DodoParseError);
+                    }
+                }
+                return Ok(Expr::Vector(token, vector));
             }
-            return Ok(Expr::Vector(token, vector));
         }
 
         return Err(DodoParseError);
